@@ -6,6 +6,7 @@ from pygame.locals import *
 
 # pygame setup 
 pygame.init()
+'''
 
 # Variable global 
 s_width = 800
@@ -214,9 +215,7 @@ main_menu() # start game
 
 
 
-
-
-
+'''
 
 
 

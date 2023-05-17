@@ -9,18 +9,18 @@ from pygame.locals import *
 
 pygame.font.init()
 
-# GLOBALS VARS
+# variable globale
 s_width = 1280
 s_height = 720
-play_width = 300  # meaning 300 // 10 = 30 width per block
-play_height = 600  # meaning 600 // 20 = 30 height per block
-block_size = 30
+play_width = 300  #  300 // 10 = 30 largeur par block
+play_height = 600  #  600 // 20 = 30 hauteur par block
+block_taille = 30
 
 top_left_x = (s_width - play_width) // 2
 top_left_y = s_height - play_height
 
 
-# SHAPE FORMATS
+# format des formes
 
 S = [['.....',
       '.....',
@@ -124,40 +124,40 @@ T = [['.....',
       '..0..',
       '.....']]
 
-shapes = [S, Z, I, O, J, L, T]
-shape_colors = [(0, 255, 0), (255, 0, 0), (0, 255, 255), (255, 255, 0), (255, 165, 0), (0, 0, 255), (128, 0, 128)]
-# index 0 - 6 represent shape
+formes = [S, Z, I, O, J, L, T]
+couleurs_formes = [(0, 255, 0), (255, 0, 0), (0, 255, 255), (255, 255, 0), (255, 165, 0), (0, 0, 255), (128, 0, 128)]
+# index 0 - 6 represent forme
 
 
-class Piece(object):  # *
-    def __init__(self, x, y, shape):
+class Piece(object):  
+    def __init__(self, x, y, forme):
         self.x = x
         self.y = y
-        self.shape = shape
-        self.color = shape_colors[shapes.index(shape)]
+        self.forme = forme
+        self.couleur = couleurs_formes[formes.index(forme)]
         self.rotation = 0
 
 
-def create_grid(locked_pos={}):  # *
-    grid = [[(0,0,0) for _ in range(10)] for _ in range(20)]
+def créer_grille(bloqué_pos={}):  # *
+    grille = [[(0,0,0) for _ in range(10)] for _ in range(20)]
 
-    for i in range(len(grid)):
-        for j in range(len(grid[i])):
-            if (j, i) in locked_pos:
-                c = locked_pos[(j,i)]
-                grid[i][j] = c
-    return grid
+    for i in range(len(grille)):
+        for j in range(len(grille[i])):
+            if (j, i) in bloqué_pos:
+                c = bloqué_pos[(j,i)]
+                grille[i][j] = c
+    return grille
 
 
-def convert_shape_format(shape):
+def convertir_format_forme(forme):
     positions = []
-    format = shape.shape[shape.rotation % len(shape.shape)]
+    format = forme.forme[forme.rotation % len(forme.forme)]
 
-    for i, line in enumerate(format):
-        row = list(line)
-        for j, column in enumerate(row):
+    for i, ligne in enumerate(format):
+        ligne = list(ligne)
+        for j, column in enumerate(ligne):
             if column == '0':
-                positions.append((shape.x + j, shape.y + i))
+                positions.append((forme.x + j, forme.y + i))
 
     for i, pos in enumerate(positions):
         positions[i] = (pos[0] - 2, pos[1] - 4)
@@ -165,14 +165,14 @@ def convert_shape_format(shape):
     return positions
 
 
-def valid_space(shape, grid):
-    accepted_pos = [[(j, i) for j in range(10) if grid[i][j] == (0,0,0)] for i in range(20)]
-    accepted_pos = [j for sub in accepted_pos for j in sub]
+def espace_valide(forme, grille):
+    position_accepté = [[(j, i) for j in range(10) if grille[i][j] == (0,0,0)] for i in range(20)]
+    position_accepté = [j for sub in position_accepté for j in sub]
 
-    formatted = convert_shape_format(shape)
+    formatté = convertir_format_forme(forme)
 
-    for pos in formatted:
-        if pos not in accepted_pos:
+    for pos in formatté:
+        if pos not in position_accepté:
             if pos[1] > -1:
                 return False
     return True
@@ -187,64 +187,63 @@ def check_lost(positions):
     return False
 
 
-def get_shape():
-    return Piece(5, 0, random.choice(shapes))
+def obtenir_forme():
+    return Piece(5, 0, random.choice(formes))
 
 
-def draw_text_middle(surface, text, size, color):
-    font = pygame.font.SysFont("comicsans", size, bold=True)
-    label = font.render(text, 1, color)
+def dessiner_text_millieu(surface, text, taille, couleur):
+    font = pygame.font.SysFont("comicsans", taille, bold=True)
+    label = font.render(text, 1, couleur)
 
     surface.blit(label, (top_left_x + play_width /2 - (label.get_width()/2), top_left_y + play_height/2 - label.get_height()/2))
 
 
-def draw_grid(surface, grid):
+def dessiner_grille(surface, grille):
     sx = top_left_x
     sy = top_left_y
 
-    for i in range(len(grid)):
-        pygame.draw.line(surface, (128,128,128), (sx, sy + i*block_size), (sx+play_width, sy+ i*block_size))
-        for j in range(len(grid[i])):
-            pygame.draw.line(surface, (128, 128, 128), (sx + j*block_size, sy),(sx + j*block_size, sy + play_height))
+    for i in range(len(grille)):
+        pygame.draw.line(surface, (128,128,128), (sx, sy + i*block_taille), (sx+play_width, sy+ i*block_taille))
+        for j in range(len(grille[i])):
+            pygame.draw.line(surface, (128, 128, 128), (sx + j*block_taille, sy),(sx + j*block_taille, sy + play_height))
 
 
-def clear_rows(grid, locked):
-
+def lignes_libre(grille, bloqué):
     inc = 0
-    for i in range(len(grid)-1, -1, -1):
-        row = grid[i]
-        if (0,0,0) not in row:
+    for i in range(len(grille)-1, -1, -1):
+        ligne = grille[i]
+        if (0,0,0) not in ligne:
             inc += 1
             ind = i
-            for j in range(len(row)):
+            for j in range(len(ligne)):
                 try:
-                    del locked[(j,i)]
+                    del bloqué[(j,i)]
                 except:
                     continue
 
     if inc > 0:
-        for key in sorted(list(locked), key=lambda x: x[1])[::-1]:
+        for key in sorted(list(bloqué), key=lambda x: x[1])[::-1]:
             x, y = key
             if y < ind:
                 newKey = (x, y + inc)
-                locked[newKey] = locked.pop(key)
+                bloqué[newKey] = bloqué.pop(key)
 
     return inc
 
 
-def draw_next_shape(shape, surface):
+def dessiner_prochaine_forme(forme, surface):
     font = pygame.font.SysFont('comicsans', 30)
-    label = font.render('Next Shape', 1, (255,255,255))
+    label = font.render('forme suivante', 1, (255,255,255))
 
     sx = top_left_x + play_width + 50
     sy = top_left_y + play_height/2 - 100
-    format = shape.shape[shape.rotation % len(shape.shape)]
+    format = forme.forme[forme.rotation % len(forme.forme)]
 
-    for i, line in enumerate(format):
-        row = list(line)
-        for j, column in enumerate(row):
+    for i, ligne in enumerate(format):
+        ligne = list(ligne)
+        for j, column in enumerate(ligne):
             if column == '0':
-                pygame.draw.rect(surface, shape.color, (sx + j*block_size, sy + i*block_size, block_size, block_size), 0)
+                pygame.draw.rect(surface, forme.couleur, (sx + j*block_taille, sy + i*block_taille, block_taille, block_taille), 0)
 
     surface.blit(label, (sx + 10, sy - 30))
 
@@ -261,13 +260,13 @@ def update_score(nscore):
 
 def max_score():
     with open('scores.txt', 'r') as f:
-        lines = f.readlines()
-        score = lines[0].strip()
+        lignes = f.readline()
+        score = lignes[0].strip()
 
     return score
 
 
-def draw_window(surface, grid, score=0, last_score = 0):
+def dessiner_fenetre(surface, grille, score=0, dernier_score = 0):
     surface.fill((0, 0, 0))
 
     pygame.font.init()
@@ -285,44 +284,44 @@ def draw_window(surface, grid, score=0, last_score = 0):
 
     surface.blit(label, (sx + 20, sy + 160))
     # last score
-    label = font.render('Meilleur score: ' + last_score, 1, (255,255,255))
+    label = font.render('Meilleur score: ' + dernier_score, 1, (255,255,255))
 
     sx = top_left_x - 200
     sy = top_left_y + 200
 
     surface.blit(label, (sx - 90, sy + 160))
 
-    for i in range(len(grid)):
-        for j in range(len(grid[i])):
-            pygame.draw.rect(surface, grid[i][j], (top_left_x + j*block_size, top_left_y + i*block_size, block_size, block_size), 0)
+    for i in range(len(grille)):
+        for j in range(len(grille[i])):
+            pygame.draw.rect(surface, grille[i][j], (top_left_x + j*block_taille, top_left_y + i*block_taille, block_taille, block_taille), 0)
 
     pygame.draw.rect(surface, (255, 0, 0), (top_left_x, top_left_y, play_width, play_height), 5)
 
-    draw_grid(surface, grid)
+    dessiner_grille(surface, grille)
     
 
 
 def main(win):  
-    last_score = max_score()
-    locked_positions = {}
-    grid = create_grid(locked_positions)
+    dernier_score = max_score()
+    bloqué_positions = {}
+    grille = créer_grille(bloqué_positions)
 
     change_piece = False
     run = True
-    current_piece = get_shape()
-    next_piece = get_shape()
+    current_piece = obtenir_forme()
+    next_piece = obtenir_forme()
     clock = pygame.time.Clock()
     fall_time = 0
     fall_speed = 0.27
     level_time = 0
     score = 0
 
-    cross_color = (255, 0, 0)
+    cross_couleur = (255, 0, 0)
     cross_pos = (s_width - 200, 50)
-    cross_size = 50
+    cross_taille = 50
 
     while run:
-        grid = create_grid(locked_positions)
+        grille = créer_grille(bloqué_positions)
         fall_time += clock.get_rawtime()
         level_time += clock.get_rawtime()
         clock.tick()
@@ -335,7 +334,7 @@ def main(win):
         if fall_time/1000 > fall_speed:
             fall_time = 0
             current_piece.y += 1
-            if not(valid_space(current_piece, grid)) and current_piece.y > 0:
+            if not(espace_valide(current_piece, grille)) and current_piece.y > 0:
                 current_piece.y -= 1
                 change_piece = True
 
@@ -346,54 +345,54 @@ def main(win):
                 sys.exit()
             
             if event.type == pygame.MOUSEBUTTONDOWN:  # Clic de souris
-                if pygame.Rect(cross_pos, (cross_size, cross_size)).collidepoint(event.pos):
+                if pygame.Rect(cross_pos, (cross_taille, cross_taille)).collidepoint(event.pos):
                     pygame.quit()
                     sys.exit()
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
                     current_piece.x -= 1
-                    if not(valid_space(current_piece, grid)):
+                    if not(espace_valide(current_piece, grille)):
                         current_piece.x += 1
                 if event.key == pygame.K_RIGHT:
                     current_piece.x += 1
-                    if not(valid_space(current_piece, grid)):
+                    if not(espace_valide(current_piece, grille)):
                         current_piece.x -= 1
                 if event.key == pygame.K_DOWN:
                     current_piece.y += 1
-                    if not(valid_space(current_piece, grid)):
+                    if not(espace_valide(current_piece, grille)):
                         current_piece.y -= 1
                 if event.key == pygame.K_UP:
                     current_piece.rotation += 1
-                    if not(valid_space(current_piece, grid)):
+                    if not(espace_valide(current_piece, grille)):
                         current_piece.rotation -= 1
 
-        shape_pos = convert_shape_format(current_piece)
+        forme_pos = convertir_format_forme(current_piece)
 
-        for i in range(len(shape_pos)):
-            x, y = shape_pos[i]
+        for i in range(len(forme_pos)):
+            x, y = forme_pos[i]
             if y > -1:
-                grid[y][x] = current_piece.color
+                grille[y][x] = current_piece.couleur
 
         if change_piece:
-            for pos in shape_pos:
+            for pos in forme_pos:
                 p = (pos[0], pos[1])
-                locked_positions[p] = current_piece.color
+                bloqué_positions[p] = current_piece.couleur
             current_piece = next_piece
-            next_piece = get_shape()
+            next_piece = obtenir_forme()
             change_piece = False
-            score += clear_rows(grid, locked_positions) * 10
+            score += lignes_libre(grille, bloqué_positions) * 10
 
-        draw_window(win, grid, score, last_score)
-        draw_next_shape(next_piece, win)
+        dessiner_fenetre(win, grille, score, dernier_score)
+        dessiner_prochaine_forme(next_piece, win)
         
-        pygame.draw.line(win, cross_color, cross_pos, (cross_pos[0] + cross_size, cross_pos[1] + cross_size), 10)
-        pygame.draw.line(win, cross_color, (cross_pos[0] + cross_size, cross_pos[1]), (cross_pos[0], cross_pos[1] + cross_size), 10)
+        pygame.draw.line(win, cross_couleur, cross_pos, (cross_pos[0] + cross_taille, cross_pos[1] + cross_taille), 10)
+        pygame.draw.line(win, cross_couleur, (cross_pos[0] + cross_taille, cross_pos[1]), (cross_pos[0], cross_pos[1] + cross_taille), 10)
         
         pygame.display.update()
 
-        if check_lost(locked_positions):
-            draw_text_middle(win, "TU AS PERDU! DEBILE!!", 80, (255,255,255))
+        if check_lost(bloqué_positions):
+            dessiner_text_millieu(win, "TU AS PERDU, DEBILE!!", 80, (255,255,255))
             pygame.display.update()
             pygame.time.delay(1500)
             run = False
@@ -402,16 +401,16 @@ def main(win):
 
 def main_menu(win):  
     run = True
-    cross_color = (255, 0, 0)
+    cross_couleur = (255, 0, 0)
     cross_pos = (s_width - 100, 50)
-    cross_size = 50
+    cross_taille = 50
     
     while run:
         win.fill((0,0,0))
-        draw_text_middle(win, 'Appuie sur une touche pour commencer', 60, (255,255,255))
+        dessiner_text_millieu(win, 'Appuie sur une touche pour commencer', 60, (255,255,255))
         
-        pygame.draw.line(win, cross_color, cross_pos, (cross_pos[0] + cross_size, cross_pos[1] + cross_size), 10)
-        pygame.draw.line(win, cross_color, (cross_pos[0] + cross_size, cross_pos[1]), (cross_pos[0], cross_pos[1] + cross_size), 10)
+        pygame.draw.line(win, cross_couleur, cross_pos, (cross_pos[0] + cross_taille, cross_pos[1] + cross_taille), 10)
+        pygame.draw.line(win, cross_couleur, (cross_pos[0] + cross_taille, cross_pos[1]), (cross_pos[0], cross_pos[1] + cross_taille), 10)
 
         
         pygame.display.update()
@@ -419,7 +418,7 @@ def main_menu(win):
             if event.type == pygame.QUIT:
                 run = False
             if event.type == pygame.MOUSEBUTTONDOWN:  # Clic de souris
-                if pygame.Rect(cross_pos, (cross_size, cross_size)).collidepoint(event.pos):
+                if pygame.Rect(cross_pos, (cross_taille, cross_taille)).collidepoint(event.pos):
                     pygame.quit()
                     sys.exit()
             if event.type == pygame.KEYDOWN:

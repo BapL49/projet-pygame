@@ -124,9 +124,16 @@ T = [['.....',
       '..0..',
       '.....']]
 
+# list des formes
 formes = [S, Z, I, O, J, L, T]
-couleurs_formes = [(0, 255, 0), (255, 0, 0), (0, 255, 255), (255, 255, 0), (255, 165, 0), (0, 0, 255), (128, 0, 128)]
-# index 0 - 6 represent forme
+
+
+def couleur_aléatoire():
+    r =random.randint(100, 255) # rouge 
+    g = random.randint(100, 255) # vert
+    b = random.randint(100, 255) # bleu
+    rgb = [r, g, b] # rgb liste 
+    return rgb
 
 
 class Piece(object):  
@@ -134,11 +141,11 @@ class Piece(object):
         self.x = x
         self.y = y
         self.forme = forme
-        self.couleur = couleurs_formes[formes.index(forme)]
+        self.couleur = couleur_aléatoire()
         self.rotation = 0
 
 
-def créer_grille(bloqué_pos={}):  # *
+def créer_grille(bloqué_pos={}):  
     grille = [[(0,0,0) for _ in range(10)] for _ in range(20)]
 
     for i in range(len(grille)):
@@ -192,11 +199,10 @@ def obtenir_forme():
 
 
 def dessiner_text_millieu(surface, text, taille, couleur):
-    font = pygame.font.SysFont("accuratist", taille, bold=True)
+    font = pygame.font.SysFont("carlito", taille, bold=True)
     label = font.render(text, 1, couleur)
 
-    surface.blit(label, (top_left_x + play_width /2 - (label.get_width()/2), top_left_y + play_height/2 - label.get_height()/2))
-
+    surface.blit(label, (top_left_x + play_width /2 - (label.get_width()/2), top_left_y + play_height/2 - label.get_height()/2))    
 
 def dessiner_grille(surface, grille):
     sx = top_left_x
@@ -232,7 +238,7 @@ def lignes_libre(grille, bloqué):
 
 
 def dessiner_prochaine_forme(forme, surface):
-    font = pygame.font.SysFont('accuratist', 30)
+    font = pygame.font.SysFont('carlito', 30)
     label = font.render('forme suivante', 1, (255,255,255))
 
     sx = top_left_x + play_width + 50
@@ -270,13 +276,13 @@ def dessiner_fenetre(surface, grille, score=0, dernier_score = 0):
     surface.fill((0, 0, 0))
 
     pygame.font.init()
-    font = pygame.font.SysFont('accuratist', 60)
+    font = pygame.font.SysFont('carlito', 60)
     label = font.render('Tetris', 1, (255, 255, 255))
 
     surface.blit(label, (top_left_x + play_width / 2 - (label.get_width() / 2), 30))
 
     # current score
-    font = pygame.font.SysFont('accuratist', 30)
+    font = pygame.font.SysFont('carlito', 30)
     label = font.render('Score: ' + str(score), 1, (255,255,255))
 
     sx = top_left_x + play_width + 50
@@ -339,6 +345,19 @@ def main(win):
                 change_piece = True
 
         for event in pygame.event.get():
+            # pour mettre le jeu en pause
+            if event.type == KEYDOWN and event.key == K_ESCAPE:
+                win.fill((0, 0, 0))
+                dessiner_text_millieu(win, 'LE JEU EST EN PAUSE', 60, (255,255,255))
+                pygame.display.update()
+            
+
+                #sous boucle unpause
+                while run: 
+                    ev = pygame.event.wait()
+                    if ev.type == KEYDOWN and ev.key == K_ESCAPE:   
+                        break
+
             if event.type == pygame.QUIT:
                 run = False
                 pygame.display.quit()
@@ -348,6 +367,7 @@ def main(win):
                 if pygame.Rect(cross_pos, (cross_taille, cross_taille)).collidepoint(event.pos):
                     pygame.quit()
                     sys.exit()
+
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:

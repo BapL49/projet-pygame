@@ -382,7 +382,7 @@ def main(win):
                     current_piece.y += 1
                     if not(espace_valide(current_piece, grille)):
                         current_piece.y -= 1
-                if event.key == pygame.K_UP:
+                if event.key == pygame.K_SPACE:
                     current_piece.rotation += 1
                     if not(espace_valide(current_piece, grille)):
                         current_piece.rotation -= 1
@@ -437,7 +437,7 @@ def main_menu(win):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-            if event.type == pygame.MOUSEBUTTONDOWN:  # Clic de souris
+            if event.type == pygame.MOUSEBUTTONDOWN:  
                 if pygame.Rect(cross_pos, (cross_taille, cross_taille)).collidepoint(event.pos):
                     pygame.quit()
                     sys.exit()

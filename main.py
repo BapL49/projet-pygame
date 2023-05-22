@@ -363,11 +363,10 @@ def main(win):
                 pygame.display.quit()
                 sys.exit()
             
-            if event.type == pygame.MOUSEBUTTONDOWN:  # Clic de souris
+            if event.type == pygame.MOUSEBUTTONDOWN:  
                 if pygame.Rect(cross_pos, (cross_taille, cross_taille)).collidepoint(event.pos):
                     pygame.quit()
                     sys.exit()
-
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
@@ -412,7 +411,7 @@ def main(win):
         pygame.display.update()
 
         if check_lost(bloqué_positions):
-            dessiner_text_millieu(win, "TU AS PERDU, DEBILE!!", 80, (255,255,255))
+            dessiner_text_millieu(win, "TU AS PERDU!!", 80, (255,255,255))
             pygame.display.update()
             pygame.time.delay(1500)
             run = False

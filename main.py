@@ -378,6 +378,7 @@ def main(win):
                     if not(espace_valide(current_piece, grille)):
                         current_piece.x -= 1
                 if event.key == pygame.K_DOWN:
+                    pygame.key.set_repeat(80) 
                     current_piece.y += 1
                     if not(espace_valide(current_piece, grille)):
                         current_piece.y -= 1
@@ -413,7 +414,7 @@ def main(win):
         if check_lost(bloqué_positions):
             dessiner_text_millieu(win, "TU AS PERDU!!", 80, (255,255,255))
             pygame.display.update()
-            pygame.time.delay(1500)
+            pygame.time.delay(2500)
             run = False
             update_score(score)
 

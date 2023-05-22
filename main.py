@@ -351,7 +351,6 @@ def main(win):
                 dessiner_text_millieu(win, 'LE JEU EST EN PAUSE', 60, (255,255,255))
                 pygame.display.update()
             
-
                 #sous boucle unpause
                 while run: 
                     ev = pygame.event.wait()
@@ -368,6 +367,7 @@ def main(win):
                     pygame.quit()
                     sys.exit()
 
+            pygame.key.set_repeat(200)
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
                     current_piece.x -= 1
@@ -378,7 +378,6 @@ def main(win):
                     if not(espace_valide(current_piece, grille)):
                         current_piece.x -= 1
                 if event.key == pygame.K_DOWN:
-                    pygame.key.set_repeat(80) 
                     current_piece.y += 1
                     if not(espace_valide(current_piece, grille)):
                         current_piece.y -= 1

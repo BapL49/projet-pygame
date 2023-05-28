@@ -4,9 +4,7 @@ import pygame
 from pygame.locals import *
 
 
-
 # pygame setup 
-
 pygame.font.init()
 
 # variable globale
@@ -15,6 +13,7 @@ s_height = 720
 play_width = 300  #  300 // 10 = 30 largeur par block
 play_height = 600  #  600 // 20 = 30 hauteur par block
 block_taille = 30
+
 
 top_left_x = (s_width - play_width) // 2
 top_left_y = s_height - play_height
@@ -204,6 +203,7 @@ def dessiner_text_millieu(surface, text, taille, couleur):
 
     surface.blit(label, (top_left_x + play_width /2 - (label.get_width()/2), top_left_y + play_height/2 - label.get_height()/2))    
 
+
 def dessiner_grille(surface, grille):
     sx = top_left_x
     sy = top_left_y
@@ -306,7 +306,6 @@ def dessiner_fenetre(surface, grille, score=0, dernier_score = 0):
     dessiner_grille(surface, grille)
     
 
-
 def main(win):  
     dernier_score = max_score()
     bloqué_positions = {}
@@ -351,7 +350,7 @@ def main(win):
                 dessiner_text_millieu(win, 'LE JEU EST EN PAUSE', 60, (255,255,255))
                 pygame.display.update()
             
-                #sous boucle unpause
+                # sous boucle unpause
                 while run: 
                     ev = pygame.event.wait()
                     if ev.type == KEYDOWN and ev.key == K_ESCAPE:   
@@ -405,6 +404,7 @@ def main(win):
         dessiner_fenetre(win, grille, score, dernier_score)
         dessiner_prochaine_forme(next_piece, win)
         
+        # dessiner croix pour fermer le jeu
         pygame.draw.line(win, cross_couleur, cross_pos, (cross_pos[0] + cross_taille, cross_pos[1] + cross_taille), 10)
         pygame.draw.line(win, cross_couleur, (cross_pos[0] + cross_taille, cross_pos[1]), (cross_pos[0], cross_pos[1] + cross_taille), 10)
         
@@ -428,6 +428,7 @@ def main_menu(win):
         win.fill((0,0,0))
         dessiner_text_millieu(win, 'Appuie sur une touche pour commencer', 60, (255,255,255))
         
+        # dessiner croix pour fermer le jeu
         pygame.draw.line(win, cross_couleur, cross_pos, (cross_pos[0] + cross_taille, cross_pos[1] + cross_taille), 10)
         pygame.draw.line(win, cross_couleur, (cross_pos[0] + cross_taille, cross_pos[1]), (cross_pos[0], cross_pos[1] + cross_taille), 10)
 

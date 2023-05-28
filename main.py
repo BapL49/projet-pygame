@@ -1,5 +1,6 @@
 import sys
 import random
+import pygame_textinput
 import pygame
 from pygame.locals import *
 
@@ -423,26 +424,56 @@ def main_menu(win):
     cross_couleur = (255, 0, 0)
     cross_pos = (s_width - 100, 50)
     cross_taille = 50
+    boutton_enter_pos = (s_width / 2 - 80, s_height / 2 + 160)
+    text_input = pygame_textinput.TextInputVisualizer()
+    text_input.font_color = (255, 0, 0)
+    text_input.cursor_color = (255, 0, 0)
+    
+    
     
     while run:
         win.fill((0,0,0))
-        dessiner_text_millieu(win, 'Appuie sur une touche pour commencer', 60, (255,255,255))
-        
+
+        events = pygame.event.get()
+
+        # input pous pseudo
+        pygame.draw.rect(win, (255, 255, 255), (s_width / 2 - 215, s_height / 2 + 10, 500, 100), 3)
+
+
+        text_input.update(events)
+        win.blit(text_input.surface, (s_width / 2.8, s_height / 2 + 50))
+    
+        font = pygame.font.SysFont("carlito", 55, bold=True)
+        label = font.render("Veuillez écrire un pseudo", 1, (0,191,255))
+        win.blit(label, (s_width / 2 - label.get_width() / 2.3, s_height / 2 - 130))    
+
+
+        # boutton entrer 
+        pygame.draw.rect(win, (255, 255, 255), (boutton_enter_pos[0], boutton_enter_pos[1], 200, 50))
+        font_for_boutton = pygame.font.SysFont("carlito", 25, bold=True)
+        text_boutton = font_for_boutton.render("jouer", 1, (0, 0, 0))
+        win.blit(text_boutton, (s_width / 2 - 7, s_height / 2 + 173))
+
         # dessiner croix pour fermer le jeu
         pygame.draw.line(win, cross_couleur, cross_pos, (cross_pos[0] + cross_taille, cross_pos[1] + cross_taille), 10)
         pygame.draw.line(win, cross_couleur, (cross_pos[0] + cross_taille, cross_pos[1]), (cross_pos[0], cross_pos[1] + cross_taille), 10)
 
-        
+
         pygame.display.update()
-        for event in pygame.event.get():
+
+        pygame.key.set_repeat(200, 25) 
+        for event in events:
             if event.type == pygame.QUIT:
                 run = False
             if event.type == pygame.MOUSEBUTTONDOWN:  
                 if pygame.Rect(cross_pos, (cross_taille, cross_taille)).collidepoint(event.pos):
                     pygame.quit()
                     sys.exit()
-            if event.type == pygame.KEYDOWN:
-                main(win)
+                if pygame.Rect(boutton_enter_pos,(200, 50)).collidepoint(event.pos):
+                    if text_input.value == "":
+                        text_input.value = "un pseudo est requis"   
+                    else:
+                        main(win)
             
 
     pygame.display.quit()

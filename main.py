@@ -19,6 +19,14 @@ block_taille = 30
 top_left_x = (s_width - play_width) // 2
 top_left_y = s_height - play_height
 
+# initialisation du module pour permettre à l'utilisateur d'écrire 
+text_input = pygame_textinput.TextInputVisualizer()
+text_input.font_color = (255, 0, 0)
+text_input.cursor_color = (255, 0, 0)
+
+# liste pour sauvegarder les scores
+fichier_score = "scores.txt"
+scores = []
 
 # format des formes
 
@@ -255,25 +263,31 @@ def dessiner_prochaine_forme(forme, surface):
     surface.blit(label, (sx + 10, sy - 30))
 
 
-def update_score(nscore):
-    score = max_score()
-
-    with open('scores.txt', 'w') as f:
-        if int(score) > nscore:
-            f.write(str(score))
-        else:
-            f.write(str(nscore))
-
-
-def max_score():
-    with open('scores.txt', 'r') as f:
-        lignes = f.readlines()
-        score = lignes[0].strip()
-
-    return score
+def sauvegarder_score(score, pseudo_du_joueur, chemin_fichier):
+    global scores
+    scores.append({"pseudo": pseudo_du_joueur, "score" : score})
+    scores.sort(key=lambda x: x["score"], reverse=True)
+    scores = scores[:3] # garde uniquement les 3 meilleurs scores
+    
+    with open(chemin_fichier, "w") as fichier:
+        for score_donnée in scores:
+            ligne = f"{score_donnée['pseudo']}, {score_donnée['score']}\n"
+            fichier.write(ligne)
 
 
-def dessiner_fenetre(surface, grille, score=0, dernier_score = 0):
+def load_scores(chemin_fichier):
+    scores.clear()
+    try:
+        with open(chemin_fichier, "r") as fichier:
+            lignes = fichier.readlines()
+            for ligne in lignes:
+                nom, score  = ligne.strip().split(",")
+                scores.append({"pseudo": nom, "score": int(score)})
+    except FileNotFoundError:
+        pass
+
+
+def dessiner_fenetre(surface, grille, score=0):
     surface.fill((0, 0, 0))
 
     pygame.font.init()
@@ -282,7 +296,7 @@ def dessiner_fenetre(surface, grille, score=0, dernier_score = 0):
 
     surface.blit(label, (top_left_x + play_width / 2 - (label.get_width() / 2), 30))
 
-    # current score
+    # score actuel
     font = pygame.font.SysFont('carlito', 30)
     label = font.render('Score: ' + str(score), 1, (255,255,255))
 
@@ -290,13 +304,22 @@ def dessiner_fenetre(surface, grille, score=0, dernier_score = 0):
     sy = top_left_y + play_height/2 - 100
 
     surface.blit(label, (sx + 20, sy + 160))
-    # last score
-    label = font.render('Meilleur score: ' + dernier_score, 1, (255,255,255))
 
-    sx = top_left_x - 200
-    sy = top_left_y + 200
 
-    surface.blit(label, (sx - 90, sy + 160))
+    # meilleurs score
+    load_scores(fichier_score)
+
+    font_meilleurs_scores = pygame.font.SysFont('carlito', 50)
+
+    sx_meilleurs_scores = top_left_x - 380
+    sy_meilleurs_scores = top_left_y + 200
+
+    for i, score in enumerate(scores):
+        text = f"{i + 1}. {score['pseudo']}: {score['score']}"
+        rendu_text = font_meilleurs_scores.render(text, True, (255,255,255))
+        win.blit(rendu_text, (sx_meilleurs_scores, sy_meilleurs_scores))
+        sy_meilleurs_scores += 80
+
 
     for i in range(len(grille)):
         for j in range(len(grille[i])):
@@ -308,7 +331,6 @@ def dessiner_fenetre(surface, grille, score=0, dernier_score = 0):
     
 
 def main(win):  
-    dernier_score = max_score()
     bloqué_positions = {}
     grille = créer_grille(bloqué_positions)
 
@@ -320,18 +342,20 @@ def main(win):
     fall_time = 0
     fall_speed = 0.27
     level_time = 0
-    score = 0
+    score_actuel = 0
 
     cross_couleur = (255, 0, 0)
     cross_pos = (s_width - 200, 50)
     cross_taille = 50
 
+    
     while run:
         grille = créer_grille(bloqué_positions)
         fall_time += clock.get_rawtime()
         level_time += clock.get_rawtime()
         clock.tick()
 
+        
         if level_time/1000 > 5:
             level_time = 0
             if level_time > 0.12:
@@ -359,11 +383,13 @@ def main(win):
 
             if event.type == pygame.QUIT:
                 run = False
+                sauvegarder_score(score_actuel, text_input.value, fichier_score)
                 pygame.display.quit()
                 sys.exit()
             
             if event.type == pygame.MOUSEBUTTONDOWN:  
                 if pygame.Rect(cross_pos, (cross_taille, cross_taille)).collidepoint(event.pos):
+                    sauvegarder_score(score_actuel, text_input.value, fichier_score)
                     pygame.quit()
                     sys.exit()
 
@@ -400,9 +426,9 @@ def main(win):
             current_piece = next_piece
             next_piece = obtenir_forme()
             change_piece = False
-            score += lignes_libre(grille, bloqué_positions) * 10
+            score_actuel += lignes_libre(grille, bloqué_positions) * 10
 
-        dessiner_fenetre(win, grille, score, dernier_score)
+        dessiner_fenetre(win, grille, score_actuel)
         dessiner_prochaine_forme(next_piece, win)
         
         # dessiner croix pour fermer le jeu
@@ -416,20 +442,16 @@ def main(win):
             pygame.display.update()
             pygame.time.delay(2500)
             run = False
-            update_score(score)
+            sauvegarder_score(score_actuel, text_input.value, fichier_score)
 
 
-def main_menu(win):  
+def main_menu(win, text_input):  
     run = True
     cross_couleur = (255, 0, 0)
     cross_pos = (s_width - 100, 50)
     cross_taille = 50
     boutton_enter_pos = (s_width / 2 - 80, s_height / 2 + 160)
-    text_input = pygame_textinput.TextInputVisualizer()
-    text_input.font_color = (255, 0, 0)
-    text_input.cursor_color = (255, 0, 0)
-    
-    
+
     
     while run:
         win.fill((0,0,0))
@@ -481,5 +503,5 @@ def main_menu(win):
 
 win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 pygame.display.set_caption('Le meilleur jeu du monde !!')
-main_menu(win)
+main_menu(win, text_input)
 

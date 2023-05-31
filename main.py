@@ -273,7 +273,7 @@ def sauvegarder_score(score, pseudo_du_joueur, chemin_fichier):
         for score_donnée in scores:
             ligne = f"{score_donnée['pseudo']}, {score_donnée['score']}\n"
             fichier.write(ligne)
-
+    
 
 def load_scores(chemin_fichier):
     scores.clear()
@@ -281,8 +281,8 @@ def load_scores(chemin_fichier):
         with open(chemin_fichier, "r") as fichier:
             lignes = fichier.readlines()
             for ligne in lignes:
-                nom, score  = ligne.strip().split(",")
-                scores.append({"pseudo": nom, "score": int(score)})
+                pseudo, score  = ligne.strip().split(",")
+                scores.append({"pseudo": pseudo, "score": int(score)})
     except FileNotFoundError:
         pass
 
@@ -458,7 +458,7 @@ def main_menu(win, text_input):
 
         events = pygame.event.get()
 
-        # input pous pseudo
+        # input pou pseudo
         pygame.draw.rect(win, (255, 255, 255), (s_width / 2 - 215, s_height / 2 + 10, 500, 100), 3)
 
 

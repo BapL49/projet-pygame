@@ -27,6 +27,9 @@ text_input.cursor_color = (255, 0, 0)
 fichier_score = "scores.txt"
 scores = []
 
+# vitesse de la chute des formes (valeur plus petite = vitesse plus élevée)
+fall_speed = 0.27
+
 # formes
 S = [['.....',
       '.....',
@@ -217,6 +220,7 @@ def dessiner_grille(surface, grille): # permet de dessiner la grille
             pygame.draw.line(surface, (128, 128, 128), (sx + j*block_taille, sy),(sx + j*block_taille, sy + play_height)) # dessine les colonnes
 
 def lignes_libre(grille, bloqué):
+    global fall_speed
     inc = 0 # compteur de ligne pleine
     for i in range(len(grille)-1, -1, -1): # itère sur les lignes en partant de la dernière jusqu'à la dernière
         ligne = grille[i]
@@ -235,7 +239,7 @@ def lignes_libre(grille, bloqué):
             if y < ind: # vérifie si la coordonnée est inférieure à l'indice de la première ligne stockée
                 newKey = (x, y + inc) # déplace la position vers le bas en tenant compte du nombre de ligne supprimées
                 bloqué[newKey] = bloqué.pop(key) # supprime la clé d'origine et la remplace par la nouvelle
-
+        fall_speed -= 0.01 * inc
     return inc
 
 def dessiner_prochaine_forme(forme, surface):
@@ -332,7 +336,6 @@ def main(win):
     next_piece = obtenir_forme()
     clock = pygame.time.Clock()
     fall_time = 0
-    fall_speed = 0.27
     level_time = 0
     score_actuel = 0
 
@@ -349,16 +352,15 @@ def main(win):
 
         
         if level_time/1000 > 5:
-            level_time = 0
-            if level_time > 0.12:
-                level_time -= 0.005
-
+            level_time = 5
+            
         if fall_time/1000 > fall_speed:
             fall_time = 0
             current_piece.y += 1
             if not(espace_valide(current_piece, grille)) and current_piece.y > 0:
                 current_piece.y -= 1
                 change_piece = True
+        
 
         for event in pygame.event.get():
             # pour mettre le jeu en pause
@@ -418,7 +420,9 @@ def main(win):
             current_piece = next_piece
             next_piece = obtenir_forme()
             change_piece = False
-            score_actuel += lignes_libre(grille, bloqué_positions) * 10
+            score_actuel += lignes_libre(grille, bloqué_positions) * 10 
+            
+            
 
         dessiner_fenetre(win, grille, score_actuel)
         dessiner_prochaine_forme(next_piece, win)

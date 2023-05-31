@@ -15,7 +15,6 @@ play_width = 300  #  300 // 10 = 30 largeur par block
 play_height = 600  #  600 // 20 = 30 hauteur par block
 block_taille = 30
 
-
 top_left_x = (s_width - play_width) // 2
 top_left_y = s_height - play_height
 
@@ -24,12 +23,11 @@ text_input = pygame_textinput.TextInputVisualizer()
 text_input.font_color = (255, 0, 0)
 text_input.cursor_color = (255, 0, 0)
 
-# liste pour sauvegarder les scores
+# liste et fichier pour sauvegarder les scores
 fichier_score = "scores.txt"
 scores = []
 
-# format des formes
-
+# formes
 S = [['.....',
       '.....',
       '..00.',
@@ -132,10 +130,10 @@ T = [['.....',
       '..0..',
       '.....']]
 
-# list des formes
+# liste des formes
 formes = [S, Z, I, O, J, L, T]
 
-
+# permet de générer une couleur aléatoire pour chaque pièce
 def couleur_aléatoire():
     r =random.randint(100, 255) # rouge 
     g = random.randint(100, 255) # vert
@@ -143,108 +141,102 @@ def couleur_aléatoire():
     rgb = [r, g, b] # rgb liste 
     return rgb
 
-
 class Piece(object):  
     def __init__(self, x, y, forme):
-        self.x = x
-        self.y = y
-        self.forme = forme
-        self.couleur = couleur_aléatoire()
-        self.rotation = 0
-
+        self.x = x # position x de la pièce
+        self.y = y # position y de la pièce
+        self.forme = forme 
+        self.couleur = couleur_aléatoire() # appel la fonction pour créer une couelur aléatoire pour chaque pièce
+        self.rotation = 0 # orientation de la pièce 
 
 def créer_grille(bloqué_pos={}):  
-    grille = [[(0,0,0) for _ in range(10)] for _ in range(20)]
+    # permet de créer une liste de 20 éléments où chaque élément est défini par (0, 0, 0)
+    # chaque élkément de la liste contient aussi une liste de 10 éléments défini par (0, 0, 0)
+    # cela permet de créer la grille du jeu
 
-    for i in range(len(grille)):
-        for j in range(len(grille[i])):
-            if (j, i) in bloqué_pos:
-                c = bloqué_pos[(j,i)]
-                grille[i][j] = c
-    return grille
+    grille = [[(0,0,0) for _ in range(10)] for _ in range(20)] 
 
+    for i in range(len(grille)): # permet d'accéder à chaque ligne de la grille
+        for j in range(len(grille[i])): #permet d'accéder à chaque colonne de la ligne
+            if (j, i) in bloqué_pos: # vérifie si la position actuelle dans la grille se trouve également dans le dictionnaire bloqué_pos 
+                c = bloqué_pos[(j,i)] # la valeur correspondant à (j, i) est récupéré dans le dictionnaire bloqué_pos
+                grille[i][j] = c # remplace la valeur initiale (0, 0, 0) de la cellule par la valeur extraite du dictionnaire
+    return grille # mise à jour de la grille
 
 def convertir_format_forme(forme):
     positions = []
-    format = forme.forme[forme.rotation % len(forme.forme)]
+    format = forme.forme[forme.rotation % len(forme.forme)] # permet de récupérer l'orientation de la forme
 
     for i, ligne in enumerate(format):
         ligne = list(ligne)
         for j, column in enumerate(ligne):
-            if column == '0':
-                positions.append((forme.x + j, forme.y + i))
+            if column == '0': # vérifie si la colonne contient le caractère 0
+                positions.append((forme.x + j, forme.y + i)) # ajoute la position de la forme dans la liste positions
 
     for i, pos in enumerate(positions):
         positions[i] = (pos[0] - 2, pos[1] - 4)
 
     return positions
 
-
-def espace_valide(forme, grille):
-    position_accepté = [[(j, i) for j in range(10) if grille[i][j] == (0,0,0)] for i in range(20)]
+def espace_valide(forme, grille): # permet de gérer les colisions 
+    position_accepté = [[(j, i) for j in range(10) if grille[i][j] == (0,0,0)] for i in range(20)] # la variable est initialisé en récupérant les cellules où la valeur est égale à (0, 0, 0)
     position_accepté = [j for sub in position_accepté for j in sub]
 
-    formatté = convertir_format_forme(forme)
+    formatté = convertir_format_forme(forme) # récupère la forme formatté  
 
     for pos in formatté:
-        if pos not in position_accepté:
+        if pos not in position_accepté: # vérifie si la forme est en dehors de la grille ou chevauche une autre forme
             if pos[1] > -1:
-                return False
+                return False # la forme ne peut être placée
     return True
-
 
 def check_lost(positions):
     for pos in positions:
         x, y = pos
-        if y < 1:
-            return True
+        if y < 1: # vérifie si la coordonnée y est inférieur à 1, soit au-dessus ou en-dessous de la première ligne de la grille
+            return True # la forme ne peut être placée 
 
     return False
 
-
-def obtenir_forme():
+def obtenir_forme(): # permet de récupérer une forme au hasard
     return Piece(5, 0, random.choice(formes))
 
+def dessiner_text_millieu(surface, text, taille, couleur): # permet de dessiner le text au millieu de l'écran
+    font = pygame.font.SysFont("carlito", taille, bold=True) # définition de la police et de la taille 
+    label = font.render(text, 1, couleur) # permet de faire un rendu du texte avec les paramètres de police défini dans la variable font
 
-def dessiner_text_millieu(surface, text, taille, couleur):
-    font = pygame.font.SysFont("carlito", taille, bold=True)
-    label = font.render(text, 1, couleur)
+    surface.blit(label, (top_left_x + play_width /2 - (label.get_width()/2), top_left_y + play_height/2 - label.get_height()/2)) # permet de dessiner le texte
 
-    surface.blit(label, (top_left_x + play_width /2 - (label.get_width()/2), top_left_y + play_height/2 - label.get_height()/2))    
-
-
-def dessiner_grille(surface, grille):
-    sx = top_left_x
+def dessiner_grille(surface, grille): # permet de dessiner la grille 
+    sx = top_left_x 
     sy = top_left_y
 
     for i in range(len(grille)):
-        pygame.draw.line(surface, (128,128,128), (sx, sy + i*block_taille), (sx+play_width, sy+ i*block_taille))
+        pygame.draw.line(surface, (128,128,128), (sx, sy + i*block_taille), (sx+play_width, sy+ i*block_taille)) # dessine les lignes
         for j in range(len(grille[i])):
-            pygame.draw.line(surface, (128, 128, 128), (sx + j*block_taille, sy),(sx + j*block_taille, sy + play_height))
-
+            pygame.draw.line(surface, (128, 128, 128), (sx + j*block_taille, sy),(sx + j*block_taille, sy + play_height)) # dessine les colonnes
 
 def lignes_libre(grille, bloqué):
-    inc = 0
-    for i in range(len(grille)-1, -1, -1):
+    inc = 0 # compteur de ligne pleine
+    for i in range(len(grille)-1, -1, -1): # itère sur les lignes en partant de la dernière jusqu'à la dernière
         ligne = grille[i]
-        if (0,0,0) not in ligne:
+        if (0,0,0) not in ligne: # vérifie si la ligne est pleine
             inc += 1
             ind = i
-            for j in range(len(ligne)):
+            for j in range(len(ligne)): # itère sur les colonnes 
                 try:
-                    del bloqué[(j,i)]
+                    del bloqué[(j,i)] # supprime la ligne si elle est pleine
                 except:
                     continue
 
-    if inc > 0:
+    if inc > 0: # vérifie si le nombre de lignes pleines est supérieur à zéro.
         for key in sorted(list(bloqué), key=lambda x: x[1])[::-1]:
-            x, y = key
-            if y < ind:
-                newKey = (x, y + inc)
-                bloqué[newKey] = bloqué.pop(key)
+            x, y = key # extrait les coordonnées x et y
+            if y < ind: # vérifie si la coordonnée est inférieure à l'indice de la première ligne stockée
+                newKey = (x, y + inc) # déplace la position vers le bas en tenant compte du nombre de ligne supprimées
+                bloqué[newKey] = bloqué.pop(key) # supprime la clé d'origine et la remplace par la nouvelle
 
     return inc
-
 
 def dessiner_prochaine_forme(forme, surface):
     font = pygame.font.SysFont('carlito', 30)
@@ -501,7 +493,7 @@ def main_menu(win, text_input):
     pygame.display.quit()
 
 
-win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-pygame.display.set_caption('Le meilleur jeu du monde !!')
+win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN) # créer une fenêtre en plein écran
+pygame.display.set_caption('Le meilleur jeu du monde !!') # titre de la fenêtre
 main_menu(win, text_input)
 
